@@ -1,0 +1,48 @@
+name: Android Build (무장쟁패)
+
+on:
+  push:
+    branches: [ '**' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Android SDK(플랫폼34/빌드툴/라이선스) 선설치 → 빌드 도중 다운로드 stall 방지
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Gradle 8.6을 액션이 설치·캐시 → 프로젝트 wrapper(services.gradle.org 130MB 다운로드) 회피
+      - name: Setup Gradle 8.6 (cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.6'
+
+      - name: Build signed debug APK (retry, per-try 10min cap)
+        run: |
+          for i in 1 2 3; do
+            echo "===== Build attempt $i ====="
+            timeout 600 gradle assembleDebug --no-daemon --stacktrace --console=plain && exit 0
+            echo "::warning::Attempt $i failed or timed out, retry in 10s..."
+            sleep 10
+          done
+          echo "::error::All 3 build attempts failed"
+          exit 1
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jangpae_0.2.1
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

@@ -1,0 +1,25 @@
+# 단일 진실 소스 (App Build Harness v1.0 §0)
+app:
+  key: jangpae
+  label: "무장쟁패"
+  credit: "영찬영하 Daddy"
+  group: "J패밀리"
+package:
+  namespace: com.jangpae.app
+  applicationId: com.jangpae.app
+version:
+  name: "0.2.1"
+  code: 10
+architecture: A형
+build:
+  gradle: "8.6"
+  agp: "8.3.2"
+  kotlin: "1.9.23"
+  compileSdk: 34
+  targetSdk: 34
+  minSdk: 26
+  jvm: "17"
+signing:
+  mode: embedded-keystore
+  store: keystore/jangpae.jks
+  alias: jangpae

@@ -1,0 +1,63 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.jangpae.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.jangpae.app"
+        minSdk 26
+        targetSdk 34
+        versionCode 10
+        versionName "0.2.1"
+    }
+
+    // 임베디드 keystore 서명 (GitHub Secrets 미사용) — 빌드마다 동일 서명 → 업데이트 설치 유지
+    signingConfigs {
+        release {
+            storeFile file("../keystore/jangpae.jks")
+            storePassword "jangpae2026"
+            keyAlias "jangpae"
+            keyPassword "jangpae2026"
+        }
+    }
+
+    buildTypes {
+        debug {
+            // assembleDebug 산출물도 커스텀 keystore로 서명 (하네스 §4: assembleDebug → 서명 APK)
+            signingConfig signingConfigs.release
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // APK 파일명 규칙: <앱키>_<versionName>.apk → jangpae_0.2.1.apk
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "jangpae_${variant.versionName}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+}
